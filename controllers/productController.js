@@ -62,9 +62,6 @@ productController.getProduct = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server side error!" });
   }
-  res
-    .status(200)
-    .json({ message: `I will send single Product for ${req.params.id}` });
 };
 
 // create a product
