@@ -159,7 +159,87 @@ productController.createProduct = async (req, res) => {
 
 // update a product
 productController.updateProduct = async (req, res) => {
-  res.status(200).json({ message: `I will update a Product ${req.params.id}` });
+  try {
+    //check the product id is valid
+    const productId =
+      req.params?.id &&
+      req.params.id?.toString()?.length === 24 &&
+      mongoose.Types.ObjectId.isValid(req.params?.id)
+        ? req.params?.id
+        : false;
+
+    //double check all inputs from the frontend
+    //title
+    const title =
+      req.body?.title?.length > 0 && typeof req.body?.title === "string"
+        ? req.body?.title
+        : false;
+
+    //description
+    const description =
+      req.body?.description?.length > 0 &&
+      typeof req.body?.description === "string"
+        ? req.body?.description
+        : false;
+
+    //check category
+    const category =
+      req.body?.category?.length > 0 && typeof req.body?.category === "string"
+        ? req.body?.category
+        : false;
+
+    //price check
+    const price =
+      req.body?.price?.length > 0 && typeof req.body?.price === "string"
+        ? req.body?.price
+        : false;
+
+    //inStock check
+    const inStock =
+      req.body?.inStock && typeof req.body?.inStock === "boolean"
+        ? req.body?.inStock
+        : false;
+
+    //images check
+    const images =
+      req.body?.images?.length > 0 && req.body?.images instanceof Object
+        ? req.body?.images
+        : false;
+
+    if (productId) {
+      //find for the product details
+      const result = await Product.findOne({ _id: productId });
+
+      if (result) {
+        //check if there is one valid input to update
+        if (title || description || category || price || inStock || images) {
+          if (title) result.title = title;
+          if (description) result.description = description;
+          if (price) result.price = Number(price);
+          if (inStock) result.inStock = inStock;
+          if (images) result.images = images;
+
+          //save the updated result/product details
+          await result.save();
+          res.status(200).json({ message: "Updated Successfully!" });
+        } else {
+          return res
+            .status(400)
+            .json({ message: "Bad Request! At least a field required!" });
+        }
+      } else {
+        return res
+          .status(404)
+          .json({ message: "Invalid Product Id.No product found!" });
+      }
+    } else {
+      return res
+        .status(400)
+        .json({ message: "Bad Request!Invalid Product id." });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "There is a server side error!" });
+  }
 };
 
 // delete a product
