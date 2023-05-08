@@ -10,6 +10,7 @@
  */
 
 // Dependencies
+const mongoose = require("mongoose");
 const Product = require("../models/Product");
 
 // Model Scaffolding
@@ -19,23 +20,48 @@ const productController = {};
 // get all products
 productController.getProducts = async (req, res) => {
   try {
-    const result = await Product.find();
-    if (result.length === 0) {
+    const result = await Product.find().select("-__v -reviews -qna").exec();
+    if (result?.length === 0) {
       return res.status(204).json({ message: "No Product Found!" });
-    } else if (result.length > 0) {
+    } else if (result?.length > 0) {
       return res.status(200).json({ data: result });
     } else {
       return res.status(500).json({ message: "Server side error!!" });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Server side error!" });
   }
-  res.status(200).json({ message: "I will send All Products" });
 };
 
 // get single product by it's id
 productController.getProduct = async (req, res) => {
+  try {
+    //check the product id is valid
+    const productId =
+      req.params?.id &&
+      req.params.id?.toString()?.length === 24 &&
+      mongoose.Types.ObjectId.isValid(req.params?.id)
+        ? req.params?.id
+        : false;
+
+    if (productId) {
+      //find for the product details
+      const result = await Product.find({ _id: productId });
+      if (result) {
+        return res.status(200).json({ message: "Success!", data: result });
+      } else {
+        return res
+          .status(404)
+          .json({ message: "Invalid Product Id.No product found!" });
+      }
+    } else {
+      return res
+        .status(400)
+        .json({ message: "Bad Request!Invalid Product id." });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Server side error!" });
+  }
   res
     .status(200)
     .json({ message: `I will send single Product for ${req.params.id}` });
