@@ -244,7 +244,37 @@ productController.updateProduct = async (req, res) => {
 
 // delete a product
 productController.deleteProduct = async (req, res) => {
-  res.status(200).json({ message: `I will delete a Product ${req.params.id}` });
+  try {
+    //check the product id is valid
+    const productId =
+      req.params?.id &&
+      req.params.id?.toString()?.length === 24 &&
+      mongoose.Types.ObjectId.isValid(req.params?.id)
+        ? req.params?.id
+        : false;
+
+    if (productId) {
+      //find by id and delete the product
+      const result = await Product.findOneAndDelete({ _id: productId });
+      if (result) {
+        // @TODO: delete all reviews and qna for this product
+        //give response if successful
+        return res.status(200).json({
+          message: `title: ${result.title} price: ${result.price} Deleted Successfully!`,
+        });
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Could Not delete the product." });
+      }
+    } else {
+      return res
+        .status(400)
+        .json({ message: "Bad Request!Invalid Product id." });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "There is a server side error!" });
+  }
 };
 
 // Export Model
