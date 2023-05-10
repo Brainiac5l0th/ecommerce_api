@@ -118,7 +118,9 @@ userController.createUser = async (req, res) => {
       const duplicateUser = await User.findOne({ phone });
       if (duplicateUser?.phone) {
         //if phone exists send response about conflict
-        return res.status(409).json({ message: "Phone already exists!" });
+        return res
+          .status(409)
+          .json({ message: "Phone Number already exists!" });
       } else {
         //hash the password
         const hashedPassword = await bcrypt.hash(password, 10); //salt round = 10
@@ -158,7 +160,96 @@ userController.createUser = async (req, res) => {
 
 // update a user
 userController.updateUser = async (req, res) => {
-  res.status(200).json({ message: "I will update user" });
+  try {
+    //check the user id is valid
+    const userId =
+      req.params?.id &&
+      req.params.id?.toString()?.length === 24 &&
+      mongoose.Types.ObjectId.isValid(req.params?.id)
+        ? req.params?.id
+        : false;
+    if (!userId) {
+    } else {
+      //phone check
+      const phone =
+        req.body?.phone?.length === 11 && typeof req.body.phone === "string"
+          ? req.body.phone
+          : false;
+
+      //password check
+      const password =
+        req.body?.password?.length > 0 && typeof req.body.password === "string"
+          ? req.body.password
+          : false;
+
+      //role check
+      const role =
+        req.body?.role?.length > 0 && typeof req.body.role === "string"
+          ? req.body.role
+          : false;
+
+      //email check
+      const email =
+        req.body?.email?.length > 0 && typeof req.body.email === "string"
+          ? req.body.email
+          : false;
+
+      //address check
+      const address =
+        req.body?.address?.length > 0 && typeof req.body.address === "string"
+          ? req.body.address
+          : false;
+
+      //fullName check
+      const fullName =
+        req.body?.fullName?.length > 0 && typeof req.body.fullName === "string"
+          ? req.body.fullName
+          : false;
+
+      if (phone && password) {
+        //duplicate check by phone
+        const duplicateUser = await User.findOne({ phone });
+        if (duplicateUser?.phone) {
+          //if phone exists send response about conflict
+          return res
+            .status(409)
+            .json({ message: "Phone Number already exists!" });
+        } else {
+          //hash the password
+          const hashedPassword = await bcrypt.hash(password, 10); //salt round = 10
+          //make object to save into USER model
+          let userObject = {
+            phone,
+            password: hashedPassword,
+          };
+          if (role) userObject = { ...userObject, role };
+          if (email) userObject = { ...userObject, email };
+          if (address) userObject = { ...userObject, address };
+          if (fullName) userObject = { ...userObject, fullName };
+
+          const newUser = await User.create(userObject);
+
+          if (newUser) {
+            return res
+              .status(201)
+              .json({ message: "User created Successfully!" });
+          } else {
+            return res
+              .status(400)
+              .json({ message: "Could not create user! Try again later" });
+          }
+        }
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Both Phone and Password required!" });
+      }
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "There is a server side error occured!" });
+  }
 };
 
 // delete a user
