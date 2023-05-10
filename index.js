@@ -21,6 +21,8 @@ const mongoose = require("mongoose");
 const connectDB = require("./config/configDB");
 const errorHandler = require("./middlewares/errorHandler");
 const productRoute = require("./routes/productRoute");
+const userRoute = require("./routes/userRoute");
+
 //environment file configuration
 dotenv.config();
 const PORT = process.env.PORT || 5005;
@@ -39,6 +41,7 @@ app.use(cors());
 
 //routes
 app.use("/products", productRoute);
+app.use("/users", userRoute);
 
 //404 handler
 app.all("*", (req, res) => {
