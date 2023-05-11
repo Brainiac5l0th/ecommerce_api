@@ -168,8 +168,14 @@ userController.updateUser = async (req, res) => {
       mongoose.Types.ObjectId.isValid(req.params?.id)
         ? req.params?.id
         : false;
+
     if (!userId) {
+      //unauthorized if there is no user id
+      return res
+        .status(403)
+        .json({ message: "Unauthorized! Try again later." });
     } else {
+      //continue updating if user id is valid
       //phone check
       const phone =
         req.body?.phone?.length === 11 && typeof req.body.phone === "string"
@@ -206,43 +212,49 @@ userController.updateUser = async (req, res) => {
           ? req.body.fullName
           : false;
 
-      if (phone && password) {
+      if (phone || password || role || email || address || fullName) {
         //duplicate check by phone
-        const duplicateUser = await User.findOne({ phone });
-        if (duplicateUser?.phone) {
+        const user = await User.findOne({ _id: userId });
+        if (!user) {
           //if phone exists send response about conflict
           return res
-            .status(409)
-            .json({ message: "Phone Number already exists!" });
+            .status(400)
+            .json({ message: "Invalid request! Try again" });
         } else {
-          //hash the password
-          const hashedPassword = await bcrypt.hash(password, 10); //salt round = 10
-          //make object to save into USER model
-          let userObject = {
-            phone,
-            password: hashedPassword,
-          };
-          if (role) userObject = { ...userObject, role };
-          if (email) userObject = { ...userObject, email };
-          if (address) userObject = { ...userObject, address };
-          if (fullName) userObject = { ...userObject, fullName };
-
-          const newUser = await User.create(userObject);
-
-          if (newUser) {
-            return res
-              .status(201)
-              .json({ message: "User created Successfully!" });
-          } else {
+          if (phone !== user?.phone) {
+            //send response : 400 if user given phone does not match database phone
             return res
               .status(400)
-              .json({ message: "Could not create user! Try again later" });
+              .json({ message: "Phone can not be changed!" });
+          }
+          if (password) {
+            //hash the password
+            const hashedPassword = await bcrypt.hash(password, 10); //salt round = 10
+            user.password = hashedPassword;
+          }
+          //update value for it's key
+          if (role) user.role = role;
+          if (email) user.email = email;
+          if (address) user.address = address;
+          if (fullName) user.fullName = fullName;
+
+          const updatedUser = await user.save();
+          if (updatedUser) {
+            //if updated value saved into database
+            return res
+              .status(200)
+              .json({ message: "User updated Successfully!" });
+          } else {
+            //if updated value could not be saved into database
+            return res
+              .status(400)
+              .json({ message: "Could not update user! Try again later" });
           }
         }
       } else {
         return res
           .status(400)
-          .json({ message: "Both Phone and Password required!" });
+          .json({ message: "At least one field required!" });
       }
     }
   } catch (error) {
@@ -254,7 +266,39 @@ userController.updateUser = async (req, res) => {
 
 // delete a user
 userController.deleteUser = async (req, res) => {
-  res.status(200).json({ message: "I will delete user" });
+  try {
+    //check the user id is valid
+    const userId =
+      req.params?.id &&
+      req.params.id?.toString()?.length === 24 &&
+      mongoose.Types.ObjectId.isValid(req.params?.id)
+        ? req.params?.id
+        : false;
+
+    if (!userId) {
+      //if user id is not valid
+      return res
+        .status(403)
+        .json({ message: "Unauthorized! Try again later." });
+    } else {
+      //continue deleting if userId valid
+      const result = await User.findOneAndDelete({ _id: userId });
+      console.log(result);
+      if (result) {
+        // @TODO: delete all orders aganist this id
+        //give response if successful
+        return res.status(200).json({
+          message: `User Deleted Successfully!`,
+        });
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Could not remove the user from the database." });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "There is a server side error!" });
+  }
 };
 
 // Export Model
