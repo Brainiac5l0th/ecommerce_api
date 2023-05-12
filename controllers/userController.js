@@ -221,7 +221,7 @@ userController.updateUser = async (req, res) => {
             .status(400)
             .json({ message: "Invalid request! Try again" });
         } else {
-          if (phone !== user?.phone) {
+          if (phone && phone !== user?.phone) {
             //send response : 400 if user given phone does not match database phone
             return res
               .status(400)
