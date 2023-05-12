@@ -114,13 +114,21 @@ userController.createUser = async (req, res) => {
         : false;
 
     if (phone && password) {
-      //duplicate check by phone
-      const duplicateUser = await User.findOne({ phone });
-      if (duplicateUser?.phone) {
+      //duplicate check by phone or email
+      const duplicateUser = await User.findOne({ $or: [{ phone }, { email }] });
+      if (duplicateUser) {
         //if phone exists send response about conflict
-        return res
-          .status(409)
-          .json({ message: "Phone Number already exists!" });
+        if (phone && email) {
+          //if user give both email and phone
+          return res
+            .status(409)
+            .json({ message: "Phone Number Or Email address already exists!" });
+        } else {
+          //phone is must, so user has to provide.
+          return res
+            .status(409)
+            .json({ message: "Phone Number already exists!" });
+        }
       } else {
         //hash the password
         const hashedPassword = await bcrypt.hash(password, 10); //salt round = 10
@@ -234,7 +242,15 @@ userController.updateUser = async (req, res) => {
           }
           //update value for it's key
           if (role) user.role = role;
-          if (email) user.email = email;
+          if (email) {
+            //check if email already exists in the database.
+            const duplicateEmail = await User.findOne({ email });
+            if (duplicateEmail) {
+              return res.status(409).json({ message: "Invalid Request!" });
+            } else {
+              user.email = email;
+            }
+          }
           if (address) user.address = address;
           if (fullName) user.fullName = fullName;
 
