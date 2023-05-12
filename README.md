@@ -1,6 +1,6 @@
 ### features
 
-`Product` ->
+**_`Product`_** ->
 
 - Only admin can create, update, delete product.
 - Both user and admin can read the product details.
