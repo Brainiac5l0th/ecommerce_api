@@ -283,7 +283,6 @@ userController.deleteUser = async (req, res) => {
     } else {
       //continue deleting if userId valid
       const result = await User.findOneAndDelete({ _id: userId });
-      console.log(result);
       if (result) {
         // @TODO: delete all orders aganist this id
         //give response if successful
