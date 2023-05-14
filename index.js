@@ -22,6 +22,7 @@ const connectDB = require("./config/configDB");
 const errorHandler = require("./middlewares/errorHandler");
 const productRoute = require("./routes/productRoute");
 const userRoute = require("./routes/userRoute");
+const authRoute = require("./routes/authRoute");
 
 //environment file configuration
 dotenv.config();
@@ -42,6 +43,7 @@ app.use(cors());
 //routes
 app.use("/products", productRoute);
 app.use("/users", userRoute);
+app.use("/auth", authRoute);
 
 //404 handler
 app.all("*", (req, res) => {
