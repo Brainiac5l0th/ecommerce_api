@@ -61,18 +61,18 @@ authController.login = async (req, res) => {
               role: userFound.role || "User",
             },
             process.env.JWT_ACCESS_TOKEN_SECRET,
-            { expiresIn: "15m" }
+            { expiresIn: "10s" }
           );
 
           //refresh token
           const refreshToken = jwt.sign(
             { phone: userFound.phone },
             process.env.JWT_REFRESH_TOKEN_SECRET,
-            { expiresIn: "7d" }
+            { expiresIn: "20s" }
           );
 
           //set refresh token to the *secure* cookie
-          res.cookie("jwt", refreshToken, {
+          res.cookie(process.env.COOKIE_NAME, refreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: "None",
@@ -100,5 +100,6 @@ authController.login = async (req, res) => {
     res.status(500).json({ message: "There is a server side error!" });
   }
 };
+
 // Export Model
 module.exports = authController;
