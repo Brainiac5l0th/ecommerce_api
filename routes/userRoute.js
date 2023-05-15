@@ -18,8 +18,14 @@ const {
   getUsers,
   updateUser,
 } = require("../controllers/userController");
+const { checkLogin } = require("../middlewares/verifyJWT");
+
 // Model Scaffolding
 const userRouter = express.Router();
+
+//middleware
+//make sure logged in to do CRUD operation
+userRouter.use(checkLogin);
 
 // Model Structure
 // GET - all users
