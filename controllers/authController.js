@@ -104,6 +104,7 @@ authController.login = async (req, res) => {
 //refresh token generator
 authController.refresh = async (req, res) => {
   try {
+    //get cookies from the request
     const cookies = Object.keys(req.cookies)?.length > 0 ? req.cookies : null;
     if (cookies && !cookies[process.env.COOKIE_NAME]) {
       return res
@@ -150,6 +151,26 @@ authController.refresh = async (req, res) => {
   }
 };
 
+//log out the user
+authController.logOut = async (req, res) => {
+  try {
+    //get cookies from the request
+    const cookies = Object.keys(req.cookies)?.length > 0 ? req.cookies : null;
+    if (cookies && !cookies[process.env.COOKIE_NAME]) {
+      return res.status(204).json({ message: "No cookie!" });
+    }
+    //if there is cookie, clear this
+    res.clearCookie(process.env.COOKIE_NAME, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
 
+    //send response
+    res.status(200).json({ message: "Cookie Cleared!" });
+  } catch (error) {
+    res.status(500).json({ message: "There is a server side error!" });
+  }
+};
 // Export Model
 module.exports = authController;
