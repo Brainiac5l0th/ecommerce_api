@@ -101,5 +101,55 @@ authController.login = async (req, res) => {
   }
 };
 
+//refresh token generator
+authController.refresh = async (req, res) => {
+  try {
+    const cookies = Object.keys(req.cookies)?.length > 0 ? req.cookies : null;
+    if (cookies && !cookies[process.env.COOKIE_NAME]) {
+      return res
+        .status(401)
+        .json({ message: "Authentication Failure! Please log in" });
+    }
+    //else generate access token again
+    const refreshToken = cookies[process.env.COOKIE_NAME];
+
+    //verify the refresh token from cookie
+    const decodedData = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_TOKEN_SECRET
+    );
+    //check if there is no phone data against the jwt
+    if (!decodedData?.phone) {
+      return res
+        .status(401)
+        .json({ message: "Authentication Failure! Please log in" });
+    }
+
+    //find the user in the database
+    const user = await User.findOne({ phone: decodedData.phone });
+    if (!user) {
+      //send 403: if no user exists
+      return res
+        .status(401)
+        .json({ message: "Authentication Failure! Please log in" });
+    }
+
+    //if user is in the database, generate access token again
+    const accessToken = jwt.sign(
+      {
+        phone: user.phone,
+        role: user.role || "User",
+      },
+      process.env.JWT_ACCESS_TOKEN_SECRET,
+      { expiresIn: "10s" }
+    );
+
+    res.status(200).json({ token: accessToken });
+  } catch (error) {
+    res.status(500).json({ message: "There is a server side error!" });
+  }
+};
+
+
 // Export Model
 module.exports = authController;
