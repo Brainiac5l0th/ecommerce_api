@@ -61,14 +61,14 @@ authController.login = async (req, res) => {
               role: userFound.role || "User",
             },
             process.env.JWT_ACCESS_TOKEN_SECRET,
-            { expiresIn: "10s" }
+            { expiresIn: "1m" }
           );
 
           //refresh token
           const refreshToken = jwt.sign(
             { phone: userFound.phone },
             process.env.JWT_REFRESH_TOKEN_SECRET,
-            { expiresIn: "20s" }
+            { expiresIn: "15m" }
           );
 
           //set refresh token to the *secure* cookie
