@@ -14,13 +14,20 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-const { login } = require("../controllers/authController");
+const { login, logOut, refresh } = require("../controllers/authController");
 
 // Model Scaffolding
 const authRouter = express.Router();
 
 // Model Structure
-authRouter.post("/", login);
+// POST - login
+authRouter.post("/login", login);
+
+// get - refresh
+authRouter.get("/refresh", refresh);
+
+// POST - logout
+authRouter.post("/logout", logOut);
 
 // Export Model
 module.exports = authRouter;
