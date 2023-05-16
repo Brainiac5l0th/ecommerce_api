@@ -25,14 +25,14 @@ verifyJWT.checkLogin = async (req, res, next) => {
 
     //check if it is Bearer token
     if (!auth?.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Authentication Failure!" });
+      return res.status(403).json({ message: "Authentication Failure!" });
     }
     //filter token
     const token = auth.split(" ")[1];
 
     jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET, (error, data) => {
       if (error || !data) {
-        return res.status(401).json({ message: error.message });
+        return res.status(403).json({ message: error.message });
       }
       //set jwt data into loggedInUser
       req.loggedInUser = { phone: data.phone, role: data.role || "User" };
