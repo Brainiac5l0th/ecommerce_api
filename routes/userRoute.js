@@ -23,25 +23,21 @@ const { checkLogin } = require("../middlewares/verifyJWT");
 // Model Scaffolding
 const userRouter = express.Router();
 
-//middleware
-//make sure logged in to do CRUD operation
-userRouter.use(checkLogin);
-
 // Model Structure
 // GET - all users
-userRouter.get("/", getUsers);
+userRouter.get("/", checkLogin, getUsers);
 
 // GET - a user
-userRouter.get("/:id", getUser);
+userRouter.get("/:id", checkLogin, getUser);
 
 // POST - a user
 userRouter.post("/", createUser);
 
 // PATCH - a user
-userRouter.patch("/:id", updateUser);
+userRouter.patch("/:id", checkLogin, updateUser);
 
 // DELETE - a user
-userRouter.delete("/:id", deleteUser);
+userRouter.delete("/:id", checkLogin, deleteUser);
 
 // Export Model
 module.exports = userRouter;
