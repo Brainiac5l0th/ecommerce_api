@@ -22,8 +22,8 @@ const userController = {};
 userController.getUsers = async (req, res) => {
   try {
     //check if logged in user is admin
-    if (!req.loggedInUser.role === "Admin") {
-      return res.status(403).json({ message: "Unauthorized!" });
+    if (req.loggedInUser?.role !== "Admin") {
+      return res.status(401).json({ message: "Unauthorized!" });
     }
     //only admin can access all users data
     const result = await User.find().select("-password");
@@ -66,7 +66,7 @@ userController.getUser = async (req, res) => {
         ) {
           return res.status(200).json({ message: "Success!", data: result });
         } else {
-          return res.status(403).json({ message: "Unauthorized!" });
+          return res.status(401).json({ message: "Unauthorized!" });
         }
       } else {
         return res
@@ -236,8 +236,8 @@ userController.updateUser = async (req, res) => {
       }
       //authorization check
       //admin has no rights to update user information
-      if (!req.loggedInUser?.phone === user?.phone) {
-        return res.status(403).json({ message: "Unauthorized!" });
+      if (req.loggedInUser?.phone !== user?.phone) {
+        return res.status(401).json({ message: "Unauthorized!" });
       }
       if (phone && phone !== user?.phone) {
         //send response : 400 if user given phone does not match database phone
@@ -296,21 +296,21 @@ userController.deleteUser = async (req, res) => {
     if (!userId) {
       //if user id is not valid
       return res
-        .status(401)
+        .status(403)
         .json({ message: "Authentication failure! Try again later." });
     }
 
     //find user by it's id
     const user = await User.find({ _id: userId });
-    if (!user?.phone) {
+    if (!user) {
       return res.status(400).json({ message: "Valid id required!" });
     }
     // check authentication
     if (
-      !req.loggedInUser?.role === "Admin" &&
-      !req.loggedInUser?.phone === user?.phone
+      req.loggedInUser?.role !== "Admin" &&
+      req.loggedInUser?.phone !== user?.phone
     ) {
-      return res.status(403).json({ message: "Unauthorized!" });
+      return res.status(401).json({ message: "Unauthorized!" });
     }
     //continue deleting if userId valid
     const result = await User.findOneAndDelete({ _id: userId });
@@ -324,7 +324,6 @@ userController.deleteUser = async (req, res) => {
     return res.status(200).json({
       message: `User Deleted Successfully!`,
     });
-    
   } catch (error) {
     return res.status(500).json({ message: "There is a server side error!" });
   }
