@@ -23,6 +23,7 @@ const errorHandler = require("./middlewares/errorHandler");
 const productRoute = require("./routes/productRoute");
 const userRoute = require("./routes/userRoute");
 const authRoute = require("./routes/authRoute");
+const reviewRoute = require("./routes/reviewRoute");
 
 //environment file configuration
 dotenv.config();
@@ -44,6 +45,7 @@ app.use(cors());
 app.use("/products", productRoute);
 app.use("/users", userRoute);
 app.use("/auth", authRoute);
+app.use("/review", reviewRoute);
 
 //404 handler
 app.all("*", (req, res) => {

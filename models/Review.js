@@ -28,6 +28,11 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       ref: "User",
     },
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "Product",
+    },
   },
   { timestamps: true }
 );
